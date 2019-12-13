@@ -1,0 +1,2 @@
+.wellsfargo.com
+.github.com

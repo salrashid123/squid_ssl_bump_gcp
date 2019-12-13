@@ -1,0 +1,58 @@
+
+always_direct allow all
+
+
+acl localnet src 10.0.0.0/8	# RFC1918 possible internal network
+acl localnet src 172.16.0.0/12	# RFC1918 possible internal network
+acl localnet src 192.168.0.0/16	# RFC1918 possible internal network
+
+acl localhost src 127.0.0.1/32
+acl to_localhost dst 127.0.0.0/8
+acl SSL_ports port 443
+
+acl CONNECT method CONNECT
+
+http_access allow all
+http_access allow manager localhost
+http_access deny manager
+
+http_access allow localnet
+http_access deny all
+
+icp_access allow localnet
+icp_access deny all
+
+htcp_access allow localnet
+htcp_access deny all
+
+visible_hostname squid.yourdomain.com
+http_port 0.0.0.0:3128 ssl-bump generate-host-certificates=on cert=/data/certs/CA_crt.pem key=/data/certs/CA_key.pem
+
+acl excluded_sites ssl::server_name  "/data/nobumpSites.txt"
+ssl_bump splice excluded_sites
+ssl_bump bump all
+
+sslproxy_cert_error deny all
+sslcrtd_program /apps/squid/libexec/security_file_certgen -s /apps/squid/var/lib/ssl_db -M 4MB sslcrtd_children 8 startup=1 idle=1
+
+icap_enable          on
+icap_preview_enable  on
+icap_preview_size    128
+icap_send_client_ip  on
+
+icap_service service_req reqmod_precache icap://127.0.0.1:13440/request
+adaptation_access service_req allow all
+
+cache deny all
+
+# Attempt to filter out the LB logs...
+acl gcplb src 130.211.0.0/22 
+acl gcplb src 35.191.0.0/16
+
+access_log /apps/squid/var/logs/access.log squid !gcplb
+
+
+icp_port 3130
+coredump_dir /apps/squid/var/cache
+
+
