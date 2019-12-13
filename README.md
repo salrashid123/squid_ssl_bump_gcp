@@ -5,7 +5,7 @@ Basic [squid proxy](http://www.squid-cache.org/) cluster which supports SSL insp
 The usecase for this is to inspect oubound ssl traffic originating from instances that specify the squid cluster as the `http_proxy` for outbound traffic.
 
 That is, with this configuation, an administrator can inspect the actual data within an SSL stream
-(i.,e allow `https://www.google.com/foo`  but not `https://www.google.com/bar`).
+(i.,e allow `https://www.google.com/foo`  but not `https://www.google.com/bar` and see headers, payload, etc).
 
 Ths is achieved by using squid's `ssl_bump` feature and delegating allow/deny decisions to a separate process that honors the [ICAP](https://wiki.squid-cache.org/Features/ICAP) protocol.
 
@@ -28,7 +28,7 @@ Use this setup to crate a cluster of squid proxies which:
 >> NOTE: this just a SAMPLE and __not__ supported by Google.  caveat emptor
 
 
-If you use this setup, you **MUST** secure the service account and GCS bucket used by the cluster and ensure :443 traffic outbound is directed towards the proxy.
+If you use this setup, you **MUST** secure the service account, instance template and GCS bucket used by the cluster.  Any client that you want to monitor must direct  :443 traffic outbound towards the proxy.
 
 ...ofcourse, this is not a _transparent_ proxy configuration:  each client must honor proxy `CONNECT` protcol (eg, use `http_proxy=` directive)
 
@@ -322,7 +322,7 @@ $ curl -vk -o /dev/null -s -x $PROXY_IP:3128   -w "%{http_code}\n"   -L https://
 
 The configuration file `nobumpSites.txt` simply inpsects the SNI data in the traffic _without inspecting_   this means we should see the actual SSL certificate from a site like `wellsfargo.com`
 
-```
+```bash
 $ curl -vk -o /dev/null -s -x 192.168.1.11:3128   -w "%{http_code}\n"   -L https://www.wellsfargo.com/
 
 * ALPN, server did not agree to a protocol
@@ -375,6 +375,9 @@ As of 12/12/19, the `squid_conf.https_proxy` and `nobumpSites.txt` is statc.
 
 Each client that connects to the proxy must trust the CA that signed squid's certificate.  You can use your own CA and distribute that to the clients that access it and even load it to the default trust store (on unix).  YOu also have to confgure each client to use the http_proxy directive (either in code or via env-var).
 
+### ICAP
+
+The example contained within this repo uses `pyicap`.  You are free to reimplement it in [go-icap](https://godoc.org/github.com/go-icap/icap/example) or any other language that is supported
 
 ### Conclusion
 
