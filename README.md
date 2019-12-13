@@ -2,12 +2,12 @@
 
 Basic [squid proxy](http://www.squid-cache.org/) cluster which supports SSL inspection (`ssl_bump`).
 
-The usecase for this is to inspect oubound ssl traffic originating from instances that specify the squid cluster as the `http_proxy` for outbound traffic.
+The usecase for this is to inspect outbound ssl traffic originating from instances that specify the squid cluster as the `http_proxy` for outbound traffic.
 
-That is, with this configuation, an administrator can inspect the actual data within an SSL stream
+That is, with this configuration, an administrator can inspect the actual data within an SSL stream
 (i.,e allow `https://www.google.com/foo`  but not `https://www.google.com/bar` and see headers, payload, etc).
 
-Ths is achieved by using squid's `ssl_bump` feature and delegating allow/deny decisions to a separate process that honors the [ICAP](https://wiki.squid-cache.org/Features/ICAP) protocol.
+This is achieved by using squid's `ssl_bump` feature and delegating allow/deny decisions to a separate process that honors the [ICAP](https://wiki.squid-cache.org/Features/ICAP) protocol.
 
 
 Use this setup to crate a cluster of squid proxies which:
@@ -128,7 +128,7 @@ gcloud compute routers nats create nat-config --router=nat-router --auto-allocat
 gcloud compute instance-templates create squid-template --no-address --metadata=enable-oslogin=FALSE --service-account=$GCE_SERVICE_ACCOUNT --scopes=cloud-platform --machine-type g1-small --tags squid  --network custom-network1  --image-family=debian-9  --image-project=debian-cloud  --subnet=subnet-$REGION-192 --region $REGION --metadata-from-file startup-script=startup.sh
 ```
 
->> note these instances use the serivce accont that is provided and does NOT have external network conectivity.
+>> note these instances use the service account that is provided and does NOT have external network connectivity.
 
 You can optionally enable [OS Login](https://cloud.google.com/compute/docs/instances/managing-instance-access)
 
@@ -186,7 +186,7 @@ In my case it was `192.168.1.3`
 
 ### Configure Test Host
 
-The follwoing VM will run in the same network whcih we will use to test
+The following VM will run in the same network which we will use to test
 
 ```
 gcloud compute firewall-rules create allow-temp-squid-ssh-all --direction=INGRESS --priority=1000 --network=custom-network1  --target-tags bastion --action=ALLOW --rules=tcp:22 --source-ranges=0.0.0.0/0
@@ -256,7 +256,7 @@ The URL above isn't blocked so we see the 200
 
 Since we are intercepting ssl traffic, we expect the Squid Proxy to sign a certificate  **on demand**
 
-Note the Certificate Issuer in the trace below.  Thie issuer is `CN=MyCA` and yet the subject CN is `cloud.google.com`.  The ssl_crtd downloded cloud.google.com's public certificate and generated one on its behalf.
+Note the Certificate Issuer in the trace below.  Thie issuer is `CN=MyCA` and yet the subject CN is `cloud.google.com`.  `ssl_crtd` downloaded cloud.google.com's public certificate and generated one by itself to present back.
 
 For another example, see 
 
@@ -330,7 +330,7 @@ $ curl -vk -o /dev/null -s -x 192.168.1.11:3128   -w "%{http_code}\n"   -L https
 *  subject: businessCategory=Private Organization; jurisdictionC=US; jurisdictionST=Delaware; serialNumber=251212; C=US; ST=California; L=San Francisco; O=Wells Fargo & Company; OU=DCG-PSG; CN=www.wellsfargo.com   
 *  start date: Feb  8 00:00:00 2019 GMT
 *  expire date: Feb  8 12:00:00 2021 GMT
-*  issuer: C=US; O=DigiCert Inc; CN=DigiCert Global CA G2  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+*  issuer: C=US; O=DigiCert Inc; CN=DigiCert Global CA G2  <<<<<<<<<<<<<<<<<<<<<<<
 *  SSL certificate verify ok.
 
 > GET / HTTP/1.1
@@ -364,6 +364,8 @@ Each VM emits squid access logs as a structured log to cloud logging:
 
 
 At the time of writing, the GPC load balancer healthchecks sends requests to the serving port and those adds a lot of noise into the logs that i have yet to filter out (if you know, LMK)...
+
+- [bug4906](https://bugs.squid-cache.org/show_bug.cgi?id=4906)
 
 ### Refreshing configuration file.
 
