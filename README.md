@@ -320,7 +320,7 @@ $ curl -vk -o /dev/null -s -x $PROXY_IP:3128   -w "%{http_code}\n"   -L https://
 
 5. Access site that bypasse3s ssl interception 
 
-The configuration file `nobumpSites.txt` simply inpsects the SNI data in the traffic _without inspecting_   this means we should see the actual SSL certificate from a site like `wellsfargo.com`
+The configuration file `nobumpSites.txt` simply inpsects the SNI data in the traffic _without inspecting_ the payload transmitted itself.  Since this is a type of a passthrough, we should see the actual SSL certificate from a site like `wellsfargo.com`
 
 ```bash
 $ curl -vk -o /dev/null -s -x 192.168.1.11:3128   -w "%{http_code}\n"   -L https://www.wellsfargo.com/
