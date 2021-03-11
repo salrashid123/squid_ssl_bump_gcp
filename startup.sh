@@ -1,7 +1,7 @@
 #! /bin/bash    
 # apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -qq wget curl supervisor git openssl python-pip build-essential libssl-dev wget python-pip vim python-setuptools inotify-tools google-cloud-sdk
 
-apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -qq wget curl supervisor git openssl python-pip build-essential libssl-dev wget python-pip vim python-setuptools inotify-tools google-cloud-sdk
+apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -qq wget curl supervisor git openssl python-pip build-essential libssl-dev wget python-pip vim python-setuptools inotify-tools google-cloud-sdk python-six
 
 mkdir -p /var/log/supervisor
 mkdir /apps/
